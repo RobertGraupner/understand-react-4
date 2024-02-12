@@ -1,30 +1,36 @@
 import styles from './app.module.css';
+import { useState } from 'react';
 import { Form } from './components/Form/Form';
 import { ToDoItem } from './components/ToDoItem/ToDoItem';
-
-// Definiujemy poza komponentem, aby uniknąć tworzenia nowej funkcji przy każdym renderowaniu. Jest niezależna od stanu komponentu, więc nie musi być wewnątrz funkcji App.
-function getSubheading(numberOfTasks) {
-	switch (true) {
-		case numberOfTasks > 4:
-			return `${numberOfTasks} zadań`;
-		case numberOfTasks > 1:
-			return `${numberOfTasks} zadania`;
-		case numberOfTasks === 1:
-			return `1 zadanie`;
-		default:
-			return `Brak zadań`;
-	}
-}
+import { getSubheading } from './utils/getSubheading';
 
 export function App() {
+	// Zmienna stanu, która przechowuje informację o tym, czy formularz jest widoczny.
+	const [isFormShown, setIsFormShown] = useState(false);
+
 	// początkowe zadania
-	const todos = [
+	const [todos, setTodos] = useState([
 		{ id: 1, title: 'Umyć okna', done: false },
 		{ id: 2, title: 'Zrobić zakupy', done: true },
 		{ id: 3, title: 'Zrobić pranie', done: false },
-		{ id: 4, title: 'Zrobić obiad', done: false },
-		{ id: 5, title: 'Zrobić kolację', done: false },
-	];
+	]);
+	// funkcja addTodo, która przyjmuje tytuł nowego zadania jako argument, tworzy nowe zadanie i dodaje je do listy zadań.
+	const addTodo = (title) => {
+		const newTodo = { id: Date.now(), title, done: false };
+		setTodos((prevTodos) => [...prevTodos, newTodo]);
+	};
+	// funkcja deleteTodo, która przyjmuje id zadania jako argument i usuwa je z listy zadań.
+	const deleteTodo = (id) => {
+		setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+	};
+	// funkcja toggleTodo, która przyjmuje id zadania jako argument i zmienia jego status na zrobione lub niezrobione.
+	const toggleTodo = (id) => {
+		setTodos((prevTodos) =>
+			prevTodos.map((todo) =>
+				todo.id === id ? { ...todo, done: !todo.done } : todo
+			)
+		);
+	};
 
 	return (
 		<div className={styles.container}>
@@ -33,12 +39,22 @@ export function App() {
 					<h1>Do zrobienia</h1>
 					<h2>{getSubheading(todos.length)}</h2>
 				</div>
-				<button className={styles.button}>+</button>
+				{!isFormShown && (
+					<button
+						onClick={() => setIsFormShown(true)}
+						className={styles.button}>
+						+
+					</button>
+				)}
 			</header>
-			<Form />
+			{isFormShown && <Form addTodo={addTodo} />}
 			<ul>
 				{todos.map((todo) => (
-					<ToDoItem key={todo.id} done={todo.done}>
+					<ToDoItem
+						key={todo.id}
+						done={todo.done}
+						toggleTodo={() => toggleTodo(todo.id)}
+						deleteTodo={() => deleteTodo(todo.id)}>
 						{todo.title}
 					</ToDoItem>
 				))}
