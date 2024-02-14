@@ -49,13 +49,13 @@ export function App() {
 			</header>
 			{isFormShown && <Form addTodo={addTodo} />}
 			<ul>
-				{todos.map((todo) => (
+				{todos.map(({ id, title, done }) => (
 					<ToDoItem
-						key={todo.id}
-						done={todo.done}
-						toggleTodo={() => toggleTodo(todo.id)}
-						deleteTodo={() => deleteTodo(todo.id)}>
-						{todo.title}
+						key={id}
+						done={done}
+						toggleTodo={() => toggleTodo(id)}
+						deleteTodo={() => deleteTodo(id)}>
+						{title}
 					</ToDoItem>
 				))}
 			</ul>
