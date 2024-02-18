@@ -1,35 +1,47 @@
 import styles from './app.module.css';
-import { useState } from 'react';
+import { useState, useReducer } from 'react';
 import { Form } from './components/Form/Form';
 import { ToDoItem } from './components/ToDoItem/ToDoItem';
 import { getSubheading } from './utils/getSubheading';
+
+// Reducer, który obsługuje akcje dodawania, usuwania i przełączania zadań.
+const todoReducer = (state, action) => {
+	switch (action.type) {
+		case 'ADD_TODO':
+			return [...state, { id: Date.now(), title: action.title, done: false }];
+		case 'DELETE_TODO':
+			return state.filter((todo) => todo.id !== action.id);
+		case 'TOGGLE_TODO':
+			return state.map((todo) =>
+				todo.id === action.id ? { ...todo, done: !todo.done } : todo
+			);
+		default:
+			throw new Error(`Nieznane działanie: ${action.type}`);
+	}
+};
 
 export function App() {
 	// Zmienna stanu, która przechowuje informację o tym, czy formularz jest widoczny.
 	const [isFormShown, setIsFormShown] = useState(false);
 
-	// początkowe zadania
-	const [todos, setTodos] = useState([
+	// Zmienna stanu, która przechowuje listę zadań i funkcję dispatch, która pozwala na wywoływanie akcji na liście zadań.
+	const [todos, dispatch] = useReducer(todoReducer, [
 		{ id: 1, title: 'Umyć okna', done: false },
 		{ id: 2, title: 'Zrobić zakupy', done: true },
 		{ id: 3, title: 'Zrobić pranie', done: false },
 	]);
-	// funkcja addTodo, która przyjmuje tytuł nowego zadania jako argument, tworzy nowe zadanie i dodaje je do listy zadań.
+
+	// Wywołuje funkcję dispatch z akcją ADD_TODO i tytułem nowego zadania jako argument.
 	const addTodo = (title) => {
-		const newTodo = { id: Date.now(), title, done: false };
-		setTodos((prevTodos) => [...prevTodos, newTodo]);
+		dispatch({ type: 'ADD_TODO', title });
 	};
-	// funkcja deleteTodo, która przyjmuje id zadania jako argument i usuwa je z listy zadań.
+	// Wywołuje funkcję dispatch z akcją DELETE_TODO i id usuwanego zadania jako argument.
 	const deleteTodo = (id) => {
-		setTodos((prevTodos) => prevTodos.filter((todo) => todo.id !== id));
+		dispatch({ type: 'DELETE_TODO', id });
 	};
-	// funkcja toggleTodo, która przyjmuje id zadania jako argument i zmienia jego status na zrobione lub niezrobione.
+	// Wywołuje funkcję dispatch z akcją TOGGLE_TODO i id przełączanego zadania jako argument.
 	const toggleTodo = (id) => {
-		setTodos((prevTodos) =>
-			prevTodos.map((todo) =>
-				todo.id === id ? { ...todo, done: !todo.done } : todo
-			)
-		);
+		dispatch({ type: 'TOGGLE_TODO', id });
 	};
 
 	return (
